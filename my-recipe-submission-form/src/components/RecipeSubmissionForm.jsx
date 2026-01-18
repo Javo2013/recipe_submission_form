@@ -3,6 +3,7 @@ import { validateField, validateRecipeForm } from "../utils/validation";
 
 function RecipeSubmissionForm() {
   const [formData, setFormData] = useState({
+    imageUrl: "",
     title: "",
     description: "",
     servings: "",
@@ -39,7 +40,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // ✅ Ingredients
+  // Ingredients
   const handleIngredientChange = (index, field, value) => {
     setFormData((prev) => {
       const updated = [...prev.ingredients];
@@ -62,7 +63,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // ✅ Instructions
+  // Instructions
   const handleInstructionChange = (index, value) => {
     setFormData((prev) => {
       const updated = [...prev.instructions];
@@ -193,7 +194,29 @@ function RecipeSubmissionForm() {
           {touched.cuisine && errors.cuisine && <p>{errors.cuisine}</p>}
         </div>
 
-        {/* ✅ Ingredients */}
+        <div>
+          <label>Recipe Image URL</label>
+          <input
+            type="text"
+            name="imageUrl"
+            value={formData.imageUrl}
+            onChange={handleChange}
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+
+        {formData.imageUrl.trim() !== "" && (
+          <div style={{ marginTop: "10px" }}>
+            <p>Preview:</p>
+            <img
+              src={formData.imageUrl}
+              alt="Recipe Preview"
+              style={{ width: "100%", maxHeight: "200px", objectFit: "cover", borderRadius: "10px" }}
+            />
+          </div>
+        )}
+
+        {/* Ingredients */}
         <div>
           <h3>Ingredients</h3>
           {formData.ingredients.map((ingredient, index) => (
@@ -236,7 +259,7 @@ function RecipeSubmissionForm() {
           </button>
         </div>
 
-        {/* ✅ Instructions */}
+        {/* Instructions */}
         <div style={{ marginTop: "20px" }}>
           <h3>Instructions</h3>
 
