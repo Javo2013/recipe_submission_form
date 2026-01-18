@@ -9,12 +9,10 @@ function RecipeSubmissionForm() {
     difficulty: "",
     category: "",
     cuisine: "",
+    ingredients: [{ name: "", quantity: "", unit: "" }],
   });
 
-  // errors for each input
   const [errors, setErrors] = useState({});
-
-  // marks fields as touched so errors appear while typing
   const [touched, setTouched] = useState({});
 
   const handleChange = (event) => {
@@ -25,7 +23,6 @@ function RecipeSubmissionForm() {
       [name]: value,
     }));
 
-    // live validation for this field
     const message = validateField(name, value);
     setErrors((prev) => ({
       ...prev,
@@ -41,13 +38,35 @@ function RecipeSubmissionForm() {
     }));
   };
 
+  // ✅ Ingredient handlers
+  const handleIngredientChange = (index, field, value) => {
+    setFormData((prev) => {
+      const updated = [...prev.ingredients];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, ingredients: updated };
+    });
+  };
+
+  const addIngredient = () => {
+    setFormData((prev) => ({
+      ...prev,
+      ingredients: [...prev.ingredients, { name: "", quantity: "", unit: "" }],
+    }));
+  };
+
+  const removeIngredient = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
     const validationErrors = validateRecipeForm(formData);
     setErrors(validationErrors);
 
-    // if any errors exist, stop
     if (Object.keys(validationErrors).length > 0) return;
 
     console.log("Submitted:", formData);
@@ -148,6 +167,53 @@ function RecipeSubmissionForm() {
             <option value="Other">Other</option>
           </select>
           {touched.cuisine && errors.cuisine && <p>{errors.cuisine}</p>}
+        </div>
+
+        {/* ✅ Ingredients Section */}
+        <div>
+          <h3>Ingredients</h3>
+
+          {formData.ingredients.map((ingredient, index) => (
+            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <input
+                type="text"
+                placeholder="Ingredient name"
+                value={ingredient.name}
+                onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
+              />
+
+              <input
+                type="number"
+                placeholder="Qty"
+                value={ingredient.quantity}
+                onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
+              />
+
+              <select
+                value={ingredient.unit}
+                onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
+              >
+                <option value="">Unit</option>
+                <option value="cups">cups</option>
+                <option value="tablespoons">tablespoons</option>
+                <option value="teaspoons">teaspoons</option>
+                <option value="ounces">ounces</option>
+                <option value="pounds">pounds</option>
+                <option value="grams">grams</option>
+                <option value="pieces">pieces</option>
+              </select>
+
+              {formData.ingredients.length > 1 && (
+                <button type="button" onClick={() => removeIngredient(index)}>
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button type="button" onClick={addIngredient}>
+            + Add Ingredient
+          </button>
         </div>
 
         <button type="submit">Submit Recipe</button>
