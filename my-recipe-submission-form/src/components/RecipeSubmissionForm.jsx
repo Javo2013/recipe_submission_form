@@ -10,6 +10,7 @@ function RecipeSubmissionForm() {
     category: "",
     cuisine: "",
     ingredients: [{ name: "", quantity: "", unit: "" }],
+    instructions: [""],
   });
 
   const [errors, setErrors] = useState({});
@@ -38,7 +39,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // ✅ Ingredient handlers
+  // ✅ Ingredients
   const handleIngredientChange = (index, field, value) => {
     setFormData((prev) => {
       const updated = [...prev.ingredients];
@@ -58,6 +59,29 @@ function RecipeSubmissionForm() {
     setFormData((prev) => ({
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
+    }));
+  };
+
+  // ✅ Instructions
+  const handleInstructionChange = (index, value) => {
+    setFormData((prev) => {
+      const updated = [...prev.instructions];
+      updated[index] = value;
+      return { ...prev, instructions: updated };
+    });
+  };
+
+  const addInstruction = () => {
+    setFormData((prev) => ({
+      ...prev,
+      instructions: [...prev.instructions, ""],
+    }));
+  };
+
+  const removeInstruction = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      instructions: prev.instructions.filter((_, i) => i !== index),
     }));
   };
 
@@ -169,10 +193,9 @@ function RecipeSubmissionForm() {
           {touched.cuisine && errors.cuisine && <p>{errors.cuisine}</p>}
         </div>
 
-        {/* ✅ Ingredients Section */}
+        {/* ✅ Ingredients */}
         <div>
           <h3>Ingredients</h3>
-
           {formData.ingredients.map((ingredient, index) => (
             <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
               <input
@@ -181,14 +204,12 @@ function RecipeSubmissionForm() {
                 value={ingredient.name}
                 onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
               />
-
               <input
                 type="number"
                 placeholder="Qty"
                 value={ingredient.quantity}
                 onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
               />
-
               <select
                 value={ingredient.unit}
                 onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
@@ -210,13 +231,40 @@ function RecipeSubmissionForm() {
               )}
             </div>
           ))}
-
           <button type="button" onClick={addIngredient}>
             + Add Ingredient
           </button>
         </div>
 
-        <button type="submit">Submit Recipe</button>
+        {/* ✅ Instructions */}
+        <div style={{ marginTop: "20px" }}>
+          <h3>Instructions</h3>
+
+          {formData.instructions.map((step, index) => (
+            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <input
+                type="text"
+                placeholder={`Step ${index + 1}`}
+                value={step}
+                onChange={(e) => handleInstructionChange(index, e.target.value)}
+              />
+
+              {formData.instructions.length > 1 && (
+                <button type="button" onClick={() => removeInstruction(index)}>
+                  Remove
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button type="button" onClick={addInstruction}>
+            + Add Step
+          </button>
+        </div>
+
+        <button type="submit" style={{ marginTop: "20px" }}>
+          Submit Recipe
+        </button>
       </form>
     </div>
   );
