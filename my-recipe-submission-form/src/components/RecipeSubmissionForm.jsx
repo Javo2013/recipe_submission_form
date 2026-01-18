@@ -2,20 +2,22 @@ import { useState } from "react";
 import { validateField, validateRecipeForm } from "../utils/validation";
 
 function RecipeSubmissionForm() {
-  const [formData, setFormData] = useState({
-    imageUrl: "",
+  const defaultForm = {
     title: "",
     description: "",
     servings: "",
     difficulty: "",
     category: "",
     cuisine: "",
+    imageUrl: "",
     ingredients: [{ name: "", quantity: "", unit: "" }],
     instructions: [""],
-  });
+  };
 
+  const [formData, setFormData] = useState(defaultForm);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [submittedRecipe, setSubmittedRecipe] = useState(null);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -40,7 +42,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // Ingredients
+  // ✅ Ingredients handlers
   const handleIngredientChange = (index, field, value) => {
     setFormData((prev) => {
       const updated = [...prev.ingredients];
@@ -63,7 +65,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // Instructions
+  // ✅ Instructions handlers
   const handleInstructionChange = (index, value) => {
     setFormData((prev) => {
       const updated = [...prev.instructions];
@@ -92,14 +94,64 @@ function RecipeSubmissionForm() {
     const validationErrors = validateRecipeForm(formData);
     setErrors(validationErrors);
 
+    // touch everything on submit
+    setTouched({
+      title: true,
+      description: true,
+      servings: true,
+      difficulty: true,
+      category: true,
+      cuisine: true,
+    });
+
     if (Object.keys(validationErrors).length > 0) return;
 
-    console.log("Submitted:", formData);
+    // ✅ success card
+    setSubmittedRecipe(formData);
+
+    // ✅ reset form after submit
+    setFormData(defaultForm);
+    setErrors({});
+    setTouched({});
   };
 
   return (
     <div>
       <h2>Recipe Submission Form</h2>
+
+      {submittedRecipe && (
+        <div style={{ border: "1px solid #ccc", padding: "15px", marginBottom: "20px" }}>
+          <h3>✅ Recipe Submitted!</h3>
+          <h4>{submittedRecipe.title}</h4>
+          <p>{submittedRecipe.description}</p>
+          <p>
+            <strong>Servings:</strong> {submittedRecipe.servings}
+          </p>
+          <p>
+            <strong>Difficulty:</strong> {submittedRecipe.difficulty}
+          </p>
+          <p>
+            <strong>Category:</strong> {submittedRecipe.category}
+          </p>
+          <p>
+            <strong>Cuisine:</strong> {submittedRecipe.cuisine}
+          </p>
+
+          {submittedRecipe.imageUrl.trim() !== "" && (
+            <img
+              src={submittedRecipe.imageUrl}
+              alt="Recipe"
+              style={{
+                width: "100%",
+                maxHeight: "200px",
+                objectFit: "cover",
+                borderRadius: "10px",
+                marginTop: "10px",
+              }}
+            />
+          )}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -205,20 +257,10 @@ function RecipeSubmissionForm() {
           />
         </div>
 
-        {formData.imageUrl.trim() !== "" && (
-          <div style={{ marginTop: "10px" }}>
-            <p>Preview:</p>
-            <img
-              src={formData.imageUrl}
-              alt="Recipe Preview"
-              style={{ width: "100%", maxHeight: "200px", objectFit: "cover", borderRadius: "10px" }}
-            />
-          </div>
-        )}
-
-        {/* Ingredients */}
-        <div>
+        {/* ✅ Ingredients */}
+        <div style={{ marginTop: "20px" }}>
           <h3>Ingredients</h3>
+
           {formData.ingredients.map((ingredient, index) => (
             <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
               <input
@@ -227,12 +269,14 @@ function RecipeSubmissionForm() {
                 value={ingredient.name}
                 onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
               />
+
               <input
                 type="number"
                 placeholder="Qty"
                 value={ingredient.quantity}
                 onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
               />
+
               <select
                 value={ingredient.unit}
                 onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
@@ -254,12 +298,13 @@ function RecipeSubmissionForm() {
               )}
             </div>
           ))}
+
           <button type="button" onClick={addIngredient}>
             + Add Ingredient
           </button>
         </div>
 
-        {/* Instructions */}
+        {/* ✅ Instructions */}
         <div style={{ marginTop: "20px" }}>
           <h3>Instructions</h3>
 
