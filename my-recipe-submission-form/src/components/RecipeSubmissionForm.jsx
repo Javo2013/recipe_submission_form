@@ -1,27 +1,76 @@
+import { useState } from "react";
+
 function RecipeSubmissionForm() {
+  // formData object state (controlled form)
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    servings: "",
+    difficulty: "",
+    category: "",
+    cuisine: "",
+  });
+
+  // updates formData when user types/selects
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("Submitted:", formData);
+  };
+
   return (
     <div>
       <h2>Recipe Submission Form</h2>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <div>
           <label>Recipe Title</label>
-          <input type="text" placeholder="Enter recipe title..." />
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Enter recipe title..."
+          />
         </div>
 
         <div>
           <label>Description</label>
-          <textarea placeholder="Enter description..." rows="4"></textarea>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Enter description..."
+            rows="4"
+          />
         </div>
 
         <div>
           <label>Servings</label>
-          <input type="number" placeholder="1-20" />
+          <input
+            type="number"
+            name="servings"
+            value={formData.servings}
+            onChange={handleChange}
+            placeholder="1-20"
+          />
         </div>
 
         <div>
           <label>Difficulty</label>
-          <select>
+          <select
+            name="difficulty"
+            value={formData.difficulty}
+            onChange={handleChange}
+          >
             <option value="">Select difficulty...</option>
             <option value="Easy">Easy</option>
             <option value="Medium">Medium</option>
@@ -31,7 +80,11 @@ function RecipeSubmissionForm() {
 
         <div>
           <label>Category</label>
-          <select>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+          >
             <option value="">Select category...</option>
             <option value="Appetizer">Appetizer</option>
             <option value="Main Course">Main Course</option>
@@ -43,7 +96,11 @@ function RecipeSubmissionForm() {
 
         <div>
           <label>Cuisine Type</label>
-          <select>
+          <select
+            name="cuisine"
+            value={formData.cuisine}
+            onChange={handleChange}
+          >
             <option value="">Select cuisine...</option>
             <option value="American">American</option>
             <option value="Italian">Italian</option>
