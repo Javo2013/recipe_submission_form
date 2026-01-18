@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { validateField, validateRecipeForm } from "../utils/validation";
+import "./RecipeSubmissionForm.css";
 
 function RecipeSubmissionForm() {
+  // ✅ Default form structure (used for reset)
   const defaultForm = {
     title: "",
     description: "",
@@ -14,11 +16,19 @@ function RecipeSubmissionForm() {
     instructions: [""],
   };
 
+  // ✅ Main state for controlled form
   const [formData, setFormData] = useState(defaultForm);
+
+  // ✅ Real-time error messages
   const [errors, setErrors] = useState({});
+
+  // ✅ Tracks what fields user touched (for showing errors only after interacting)
   const [touched, setTouched] = useState({});
+
+  // ✅ Stores the last submitted recipe (for success card)
   const [submittedRecipe, setSubmittedRecipe] = useState(null);
 
+  // ✅ Handles changes for normal inputs/selects/textarea
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -27,6 +37,7 @@ function RecipeSubmissionForm() {
       [name]: value,
     }));
 
+    // ✅ Live validate this single field
     const message = validateField(name, value);
     setErrors((prev) => ({
       ...prev,
@@ -34,6 +45,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
+  // ✅ Marks field as touched when user leaves input
   const handleBlur = (event) => {
     const { name } = event.target;
     setTouched((prev) => ({
@@ -42,15 +54,19 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // ✅ Ingredients handlers
+  // ✅ INGREDIENTS: update one ingredient field
   const handleIngredientChange = (index, field, value) => {
     setFormData((prev) => {
-      const updated = [...prev.ingredients];
-      updated[index] = { ...updated[index], [field]: value };
-      return { ...prev, ingredients: updated };
+      const updatedIngredients = [...prev.ingredients];
+      updatedIngredients[index] = {
+        ...updatedIngredients[index],
+        [field]: value,
+      };
+      return { ...prev, ingredients: updatedIngredients };
     });
   };
 
+  // ✅ INGREDIENTS: add new ingredient row
   const addIngredient = () => {
     setFormData((prev) => ({
       ...prev,
@@ -58,6 +74,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
+  // ✅ INGREDIENTS: remove ingredient row
   const removeIngredient = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -65,15 +82,16 @@ function RecipeSubmissionForm() {
     }));
   };
 
-  // ✅ Instructions handlers
+  // ✅ INSTRUCTIONS: update one instruction step
   const handleInstructionChange = (index, value) => {
     setFormData((prev) => {
-      const updated = [...prev.instructions];
-      updated[index] = value;
-      return { ...prev, instructions: updated };
+      const updatedSteps = [...prev.instructions];
+      updatedSteps[index] = value;
+      return { ...prev, instructions: updatedSteps };
     });
   };
 
+  // ✅ INSTRUCTIONS: add a step
   const addInstruction = () => {
     setFormData((prev) => ({
       ...prev,
@@ -81,6 +99,7 @@ function RecipeSubmissionForm() {
     }));
   };
 
+  // ✅ INSTRUCTIONS: remove a step
   const removeInstruction = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -88,13 +107,15 @@ function RecipeSubmissionForm() {
     }));
   };
 
+  // ✅ Submit handler with full validation
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // ✅ validate entire form on submit
     const validationErrors = validateRecipeForm(formData);
     setErrors(validationErrors);
 
-    // touch everything on submit
+    // ✅ touch all required fields so errors show if missing
     setTouched({
       title: true,
       description: true,
@@ -104,26 +125,29 @@ function RecipeSubmissionForm() {
       cuisine: true,
     });
 
+    // ✅ stop submit if errors exist
     if (Object.keys(validationErrors).length > 0) return;
 
-    // ✅ success card
+    // ✅ show success card
     setSubmittedRecipe(formData);
 
-    // ✅ reset form after submit
+    // ✅ reset form after successful submission
     setFormData(defaultForm);
     setErrors({});
     setTouched({});
   };
 
   return (
-    <div>
-      <h2>Recipe Submission Form</h2>
+    <div className="formWrapper">
+      <h2 className="formTitle">Recipe Submission Form</h2>
 
+      {/* ✅ Success Card */}
       {submittedRecipe && (
-        <div style={{ border: "1px solid #ccc", padding: "15px", marginBottom: "20px" }}>
+        <div className="successCard">
           <h3>✅ Recipe Submitted!</h3>
           <h4>{submittedRecipe.title}</h4>
           <p>{submittedRecipe.description}</p>
+
           <p>
             <strong>Servings:</strong> {submittedRecipe.servings}
           </p>
@@ -141,20 +165,32 @@ function RecipeSubmissionForm() {
             <img
               src={submittedRecipe.imageUrl}
               alt="Recipe"
-              style={{
-                width: "100%",
-                maxHeight: "200px",
-                objectFit: "cover",
-                borderRadius: "10px",
-                marginTop: "10px",
-              }}
+              className="previewImg"
             />
           )}
+
+          <h4 className="sectionTitle">Ingredients</h4>
+          <ul>
+            {submittedRecipe.ingredients.map((ing, i) => (
+              <li key={i}>
+                {ing.quantity} {ing.unit} - {ing.name}
+              </li>
+            ))}
+          </ul>
+
+          <h4 className="sectionTitle">Instructions</h4>
+          <ol>
+            {submittedRecipe.instructions.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      {/* ✅ Form */}
+      <form onSubmit={handleSubmit} className="formGrid">
+        {/* Title */}
+        <div className="field">
           <label>Recipe Title</label>
           <input
             type="text"
@@ -164,10 +200,13 @@ function RecipeSubmissionForm() {
             onBlur={handleBlur}
             placeholder="Enter recipe title..."
           />
-          {touched.title && errors.title && <p>{errors.title}</p>}
+          {touched.title && errors.title && (
+            <p className="errorText">{errors.title}</p>
+          )}
         </div>
 
-        <div>
+        {/* Description */}
+        <div className="field">
           <label>Description</label>
           <textarea
             name="description"
@@ -177,10 +216,13 @@ function RecipeSubmissionForm() {
             placeholder="Enter description..."
             rows="4"
           />
-          {touched.description && errors.description && <p>{errors.description}</p>}
+          {touched.description && errors.description && (
+            <p className="errorText">{errors.description}</p>
+          )}
         </div>
 
-        <div>
+        {/* Servings */}
+        <div className="field">
           <label>Servings</label>
           <input
             type="number"
@@ -190,11 +232,14 @@ function RecipeSubmissionForm() {
             onBlur={handleBlur}
             placeholder="1-20"
           />
-          {touched.servings && errors.servings && <p>{errors.servings}</p>}
+          {touched.servings && errors.servings && (
+            <p className="errorText">{errors.servings}</p>
+          )}
         </div>
 
-        <div>
-          <label>Difficulty</label>
+        {/* Difficulty */}
+        <div className="field">
+          <label>Difficulty Level</label>
           <select
             name="difficulty"
             value={formData.difficulty}
@@ -206,10 +251,13 @@ function RecipeSubmissionForm() {
             <option value="Medium">Medium</option>
             <option value="Hard">Hard</option>
           </select>
-          {touched.difficulty && errors.difficulty && <p>{errors.difficulty}</p>}
+          {touched.difficulty && errors.difficulty && (
+            <p className="errorText">{errors.difficulty}</p>
+          )}
         </div>
 
-        <div>
+        {/* Category */}
+        <div className="field">
           <label>Category</label>
           <select
             name="category"
@@ -224,10 +272,13 @@ function RecipeSubmissionForm() {
             <option value="Side Dish">Side Dish</option>
             <option value="Beverage">Beverage</option>
           </select>
-          {touched.category && errors.category && <p>{errors.category}</p>}
+          {touched.category && errors.category && (
+            <p className="errorText">{errors.category}</p>
+          )}
         </div>
 
-        <div>
+        {/* Cuisine */}
+        <div className="field">
           <label>Cuisine Type</label>
           <select
             name="cuisine"
@@ -243,10 +294,13 @@ function RecipeSubmissionForm() {
             <option value="Mediterranean">Mediterranean</option>
             <option value="Other">Other</option>
           </select>
-          {touched.cuisine && errors.cuisine && <p>{errors.cuisine}</p>}
+          {touched.cuisine && errors.cuisine && (
+            <p className="errorText">{errors.cuisine}</p>
+          )}
         </div>
 
-        <div>
+        {/* Image URL */}
+        <div className="field">
           <label>Recipe Image URL</label>
           <input
             type="text"
@@ -257,80 +311,102 @@ function RecipeSubmissionForm() {
           />
         </div>
 
-        {/* ✅ Ingredients */}
-        <div style={{ marginTop: "20px" }}>
-          <h3>Ingredients</h3>
+        {/* Image Preview */}
+        {formData.imageUrl.trim() !== "" && (
+          <img
+            src={formData.imageUrl}
+            alt="Recipe Preview"
+            className="previewImg"
+          />
+        )}
 
-          {formData.ingredients.map((ingredient, index) => (
-            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              <input
-                type="text"
-                placeholder="Ingredient name"
-                value={ingredient.name}
-                onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
-              />
+        {/* Ingredients */}
+        <h3 className="sectionTitle">Ingredients</h3>
 
-              <input
-                type="number"
-                placeholder="Qty"
-                value={ingredient.quantity}
-                onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
-              />
+        {formData.ingredients.map((ingredient, index) => (
+          <div key={index} className="row">
+            <input
+              type="text"
+              placeholder="Ingredient name"
+              value={ingredient.name}
+              onChange={(e) =>
+                handleIngredientChange(index, "name", e.target.value)
+              }
+            />
 
-              <select
-                value={ingredient.unit}
-                onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
+            <input
+              type="number"
+              placeholder="Qty"
+              value={ingredient.quantity}
+              onChange={(e) =>
+                handleIngredientChange(index, "quantity", e.target.value)
+              }
+            />
+
+            <select
+              value={ingredient.unit}
+              onChange={(e) =>
+                handleIngredientChange(index, "unit", e.target.value)
+              }
+            >
+              <option value="">Unit</option>
+              <option value="cups">cups</option>
+              <option value="tablespoons">tablespoons</option>
+              <option value="teaspoons">teaspoons</option>
+              <option value="ounces">ounces</option>
+              <option value="pounds">pounds</option>
+              <option value="grams">grams</option>
+              <option value="pieces">pieces</option>
+            </select>
+
+            {formData.ingredients.length > 1 ? (
+              <button
+                type="button"
+                className="btn btnDanger"
+                onClick={() => removeIngredient(index)}
               >
-                <option value="">Unit</option>
-                <option value="cups">cups</option>
-                <option value="tablespoons">tablespoons</option>
-                <option value="teaspoons">teaspoons</option>
-                <option value="ounces">ounces</option>
-                <option value="pounds">pounds</option>
-                <option value="grams">grams</option>
-                <option value="pieces">pieces</option>
-              </select>
+                Remove
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+        ))}
 
-              {formData.ingredients.length > 1 && (
-                <button type="button" onClick={() => removeIngredient(index)}>
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+        <button type="button" className="btn" onClick={addIngredient}>
+          + Add Ingredient
+        </button>
 
-          <button type="button" onClick={addIngredient}>
-            + Add Ingredient
-          </button>
-        </div>
+        {/* Instructions */}
+        <h3 className="sectionTitle">Instructions</h3>
 
-        {/* ✅ Instructions */}
-        <div style={{ marginTop: "20px" }}>
-          <h3>Instructions</h3>
+        {formData.instructions.map((step, index) => (
+          <div key={index} style={{ display: "flex", gap: "10px" }}>
+            <input
+              type="text"
+              placeholder={`Step ${index + 1}`}
+              value={step}
+              onChange={(e) => handleInstructionChange(index, e.target.value)}
+            />
 
-          {formData.instructions.map((step, index) => (
-            <div key={index} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-              <input
-                type="text"
-                placeholder={`Step ${index + 1}`}
-                value={step}
-                onChange={(e) => handleInstructionChange(index, e.target.value)}
-              />
+            {formData.instructions.length > 1 && (
+              <button
+                type="button"
+                className="btn btnDanger"
+                onClick={() => removeInstruction(index)}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
 
-              {formData.instructions.length > 1 && (
-                <button type="button" onClick={() => removeInstruction(index)}>
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+        <button type="button" className="btn" onClick={addInstruction}>
+          + Add Step
+        </button>
 
-          <button type="button" onClick={addInstruction}>
-            + Add Step
-          </button>
-        </div>
-
-        <button type="submit" style={{ marginTop: "20px" }}>
+        {/* Submit */}
+        <button className="btn" type="submit">
           Submit Recipe
         </button>
       </form>
